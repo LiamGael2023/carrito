@@ -8,6 +8,8 @@
     <!-- CSS files -->
     <link href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/css/tabler.min.css" rel="stylesheet"/>
     <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" rel="stylesheet"/>
+    <!-- jsPDF for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
       .water-bill-card {
         transition: all 0.3s ease;
@@ -45,6 +47,22 @@
           position: relative;
           margin-top: 1rem;
         }
+      }
+      .pdf-viewer-container {
+        width: 100%;
+        height: 70vh;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+      .pdf-viewer-container iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+      }
+      .btn-view-receipt {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
       }
     </style>
   </head>
@@ -151,6 +169,7 @@
                           <th>Fecha de Pago</th>
                           <th>Monto</th>
                           <th>Estado</th>
+                          <th class="w-1">Acciones</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -159,18 +178,33 @@
                           <td class="text-muted">15/08/2024</td>
                           <td>$45.50</td>
                           <td><span class="badge bg-success">Pagado</span></td>
+                          <td>
+                            <button class="btn btn-sm btn-outline-primary btn-view-receipt" onclick="viewPaidReceipt(5)">
+                              <i class="ti ti-file-text me-1"></i>Ver Recibo
+                            </button>
+                          </td>
                         </tr>
                         <tr>
                           <td>Junio 2024</td>
                           <td class="text-muted">14/07/2024</td>
                           <td>$42.30</td>
                           <td><span class="badge bg-success">Pagado</span></td>
+                          <td>
+                            <button class="btn btn-sm btn-outline-primary btn-view-receipt" onclick="viewPaidReceipt(6)">
+                              <i class="ti ti-file-text me-1"></i>Ver Recibo
+                            </button>
+                          </td>
                         </tr>
                         <tr>
                           <td>Mayo 2024</td>
                           <td class="text-muted">13/06/2024</td>
                           <td>$48.75</td>
                           <td><span class="badge bg-success">Pagado</span></td>
+                          <td>
+                            <button class="btn btn-sm btn-outline-primary btn-view-receipt" onclick="viewPaidReceipt(7)">
+                              <i class="ti ti-file-text me-1"></i>Ver Recibo
+                            </button>
+                          </td>
                         </tr>
                       </tbody>
                     </table>
@@ -359,6 +393,33 @@
       </div>
     </div>
 
+    <!-- Modal para visualizar PDF -->
+    <div class="modal modal-blur fade" id="pdfModal" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="ti ti-file-text me-2"></i>
+              <span id="pdfModalTitle">Recibo de Agua</span>
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-0">
+            <div class="pdf-viewer-container">
+              <iframe id="pdfViewer" title="Visor de PDF"></iframe>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn me-auto" data-bs-dismiss="modal">Cerrar</button>
+            <button type="button" class="btn btn-primary" id="downloadPdf">
+              <i class="ti ti-download me-2"></i>
+              Descargar PDF
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Libs JS -->
     <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/js/tabler.min.js"></script>
 
@@ -459,8 +520,13 @@
                     </div>
                   </div>
                 </div>
-                <div class="text-muted small">
-                  <i class="ti ti-arrow-right me-1"></i>Lectura: ${bill.previousReading} → ${bill.currentReading}
+                <div class="d-flex justify-content-between align-items-center mt-1">
+                  <div class="text-muted small">
+                    <i class="ti ti-arrow-right me-1"></i>Lectura: ${bill.previousReading} → ${bill.currentReading}
+                  </div>
+                  <button class="btn btn-sm btn-outline-primary btn-view-receipt view-bill-pdf" data-bill-id="${bill.id}">
+                    <i class="ti ti-file-text me-1"></i>Ver Recibo
+                  </button>
                 </div>
               </div>
             </div>
@@ -473,6 +539,15 @@
           checkbox.addEventListener('change', function() {
             const billId = parseInt(this.dataset.billId);
             toggleBillInCart(billId);
+          });
+        });
+
+        // Agregar event listeners a los botones de ver recibo
+        document.querySelectorAll('.view-bill-pdf').forEach(btn => {
+          btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const billId = parseInt(this.dataset.billId);
+            viewBillReceipt(billId);
           });
         });
       }
@@ -617,6 +692,251 @@
           updateCart();
           renderBills();
         }, 500);
+      });
+
+      // Datos de pagos realizados (historial)
+      const paidBills = [
+        {
+          id: 5,
+          period: 'Julio 2024',
+          readingDate: '01/07/2024',
+          dueDate: '20/07/2024',
+          paymentDate: '15/08/2024',
+          previousReading: 1095,
+          currentReading: 1130,
+          consumption: 35,
+          amount: 45.50,
+          status: 'paid',
+          transactionId: 'TRX-2024-0815-001'
+        },
+        {
+          id: 6,
+          period: 'Junio 2024',
+          readingDate: '01/06/2024',
+          dueDate: '20/06/2024',
+          paymentDate: '14/07/2024',
+          previousReading: 1063,
+          currentReading: 1095,
+          consumption: 32,
+          amount: 42.30,
+          status: 'paid',
+          transactionId: 'TRX-2024-0714-002'
+        },
+        {
+          id: 7,
+          period: 'Mayo 2024',
+          readingDate: '01/05/2024',
+          dueDate: '20/05/2024',
+          paymentDate: '13/06/2024',
+          previousReading: 1025,
+          currentReading: 1063,
+          consumption: 38,
+          amount: 48.75,
+          status: 'paid',
+          transactionId: 'TRX-2024-0613-003'
+        }
+      ];
+
+      // Variable para almacenar el PDF actual
+      let currentPdfBlob = null;
+      let currentPdfName = '';
+
+      // Función para generar PDF de recibo
+      function generateReceiptPDF(billData, isPaid = false) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        // Configuración de colores
+        const primaryColor = [32, 107, 196];
+        const textColor = [51, 51, 51];
+        const mutedColor = [108, 117, 125];
+
+        // Header con logo/título
+        doc.setFillColor(...primaryColor);
+        doc.rect(0, 0, 210, 40, 'F');
+
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(24);
+        doc.setFont('helvetica', 'bold');
+        doc.text('AguaPago', 20, 25);
+
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Sistema de Pagos en Línea', 20, 33);
+
+        // Título del recibo
+        doc.setTextColor(...textColor);
+        doc.setFontSize(18);
+        doc.setFont('helvetica', 'bold');
+        doc.text(isPaid ? 'COMPROBANTE DE PAGO' : 'RECIBO DE AGUA', 105, 55, { align: 'center' });
+
+        // Número de recibo
+        doc.setFontSize(10);
+        doc.setTextColor(...mutedColor);
+        doc.text(`Recibo N°: ${String(billData.id).padStart(6, '0')}`, 105, 62, { align: 'center' });
+
+        // Línea separadora
+        doc.setDrawColor(...primaryColor);
+        doc.setLineWidth(0.5);
+        doc.line(20, 68, 190, 68);
+
+        // Información del cliente
+        doc.setTextColor(...textColor);
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Datos del Cliente', 20, 80);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.text('Nombre: Juan Pérez', 20, 88);
+        doc.text('Cuenta: 12345678', 20, 95);
+        doc.text('Dirección: Av. Principal #123, Ciudad', 20, 102);
+
+        // Información del servicio
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Detalle del Consumo', 20, 118);
+
+        // Tabla de consumo
+        const tableStartY = 125;
+        const colWidths = [80, 45, 45];
+        const rowHeight = 8;
+
+        // Encabezado de tabla
+        doc.setFillColor(240, 240, 240);
+        doc.rect(20, tableStartY, 170, rowHeight, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
+        doc.text('Concepto', 25, tableStartY + 6);
+        doc.text('Detalle', 105, tableStartY + 6);
+        doc.text('Valor', 155, tableStartY + 6);
+
+        // Filas de datos
+        doc.setFont('helvetica', 'normal');
+        const data = [
+          ['Período', billData.period, ''],
+          ['Fecha de Lectura', billData.readingDate, ''],
+          ['Lectura Anterior', String(billData.previousReading) + ' m³', ''],
+          ['Lectura Actual', String(billData.currentReading) + ' m³', ''],
+          ['Consumo del Período', String(billData.consumption) + ' m³', ''],
+          ['Fecha de Vencimiento', billData.dueDate, ''],
+          ['Importe', '', '$' + billData.amount.toFixed(2)]
+        ];
+
+        data.forEach((row, index) => {
+          const y = tableStartY + rowHeight + (index * rowHeight);
+          if (index % 2 === 1) {
+            doc.setFillColor(248, 249, 250);
+            doc.rect(20, y, 170, rowHeight, 'F');
+          }
+          doc.text(row[0], 25, y + 6);
+          doc.text(row[1], 105, y + 6);
+          doc.setFont('helvetica', 'bold');
+          doc.text(row[2], 185, y + 6, { align: 'right' });
+          doc.setFont('helvetica', 'normal');
+        });
+
+        // Total
+        const totalY = tableStartY + rowHeight + (data.length * rowHeight) + 5;
+        doc.setFillColor(...primaryColor);
+        doc.rect(120, totalY, 70, 12, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(12);
+        doc.text('TOTAL: $' + billData.amount.toFixed(2), 155, totalY + 8, { align: 'center' });
+
+        // Si está pagado, mostrar información de pago
+        if (isPaid && billData.paymentDate) {
+          doc.setTextColor(39, 174, 96);
+          doc.setFontSize(14);
+          doc.text('PAGADO', 105, totalY + 25, { align: 'center' });
+
+          doc.setTextColor(...mutedColor);
+          doc.setFontSize(9);
+          doc.text(`Fecha de Pago: ${billData.paymentDate}`, 105, totalY + 32, { align: 'center' });
+          if (billData.transactionId) {
+            doc.text(`ID Transacción: ${billData.transactionId}`, 105, totalY + 38, { align: 'center' });
+          }
+        }
+
+        // Estado (si no está pagado)
+        if (!isPaid) {
+          const statusY = totalY + 25;
+          if (billData.isOverdue) {
+            doc.setTextColor(220, 53, 69);
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text('VENCIDO', 105, statusY, { align: 'center' });
+          } else {
+            doc.setTextColor(255, 193, 7);
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text('PENDIENTE DE PAGO', 105, statusY, { align: 'center' });
+          }
+        }
+
+        // Footer
+        doc.setTextColor(...mutedColor);
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Este documento es un comprobante oficial de AguaPago.', 105, 270, { align: 'center' });
+        doc.text('Para consultas: soporte@aguapago.com | Tel: (555) 123-4567', 105, 276, { align: 'center' });
+        doc.text(`Generado el: ${new Date().toLocaleString('es-ES')}`, 105, 282, { align: 'center' });
+
+        return doc;
+      }
+
+      // Función para ver recibo de lectura pendiente
+      function viewBillReceipt(billId) {
+        const bill = waterBills.find(b => b.id === billId);
+        if (!bill) return;
+
+        const doc = generateReceiptPDF(bill, false);
+        const pdfBlob = doc.output('blob');
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+
+        currentPdfBlob = pdfBlob;
+        currentPdfName = `Recibo_Agua_${bill.period.replace(' ', '_')}.pdf`;
+
+        document.getElementById('pdfModalTitle').textContent = `Recibo - ${bill.period}`;
+        document.getElementById('pdfViewer').src = pdfUrl;
+
+        const pdfModal = new bootstrap.Modal(document.getElementById('pdfModal'));
+        pdfModal.show();
+      }
+
+      // Función para ver recibo de pago realizado
+      function viewPaidReceipt(billId) {
+        const bill = paidBills.find(b => b.id === billId);
+        if (!bill) return;
+
+        const doc = generateReceiptPDF(bill, true);
+        const pdfBlob = doc.output('blob');
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+
+        currentPdfBlob = pdfBlob;
+        currentPdfName = `Comprobante_Pago_${bill.period.replace(' ', '_')}.pdf`;
+
+        document.getElementById('pdfModalTitle').textContent = `Comprobante de Pago - ${bill.period}`;
+        document.getElementById('pdfViewer').src = pdfUrl;
+
+        const pdfModal = new bootstrap.Modal(document.getElementById('pdfModal'));
+        pdfModal.show();
+      }
+
+      // Event listener para descargar PDF
+      document.getElementById('downloadPdf').addEventListener('click', function() {
+        if (currentPdfBlob) {
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(currentPdfBlob);
+          link.download = currentPdfName;
+          link.click();
+        }
+      });
+
+      // Limpiar URL del PDF al cerrar modal
+      document.getElementById('pdfModal').addEventListener('hidden.bs.modal', function() {
+        document.getElementById('pdfViewer').src = '';
       });
 
       // Inicializar
