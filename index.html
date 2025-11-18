@@ -153,18 +153,238 @@
         <!-- Page body -->
         <div class="page-body">
           <div class="container-xl">
-            <!-- Alert informativo -->
-            <div class="alert alert-info alert-dismissible" role="alert">
-              <div class="d-flex">
-                <div>
-                  <i class="ti ti-info-circle alert-icon"></i>
-                </div>
-                <div>
-                  <h4 class="alert-title">Bienvenido al sistema de pagos</h4>
-                  <div class="text-muted">Seleccione los recibos que desea pagar marcando la casilla correspondiente. Puede pagar múltiples recibos en una sola transacción.</div>
+            <!-- Alertas dinámicas -->
+            <div class="row mb-3" id="alertsSection">
+              <!-- Alerta de deuda vencida -->
+              <div class="col-md-6 col-lg-4 mb-2">
+                <div class="alert alert-danger mb-0" role="alert">
+                  <div class="d-flex">
+                    <div>
+                      <i class="ti ti-alert-triangle alert-icon"></i>
+                    </div>
+                    <div>
+                      <h4 class="alert-title">Deuda Vencida</h4>
+                      <div class="text-muted">Tiene <strong>$180.00</strong> en recibos vencidos. Evite el corte de servicio.</div>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <a class="btn-close" data-bs-dismiss="alert" aria-label="close"></a>
+              <!-- Alerta de próximo vencimiento -->
+              <div class="col-md-6 col-lg-4 mb-2">
+                <div class="alert alert-warning mb-0" role="alert">
+                  <div class="d-flex">
+                    <div>
+                      <i class="ti ti-clock alert-icon"></i>
+                    </div>
+                    <div>
+                      <h4 class="alert-title">Próximo Vencimiento</h4>
+                      <div class="text-muted">Su recibo de Nov 2024 vence en <strong>2 días</strong>.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Alerta de consumo -->
+              <div class="col-md-6 col-lg-4 mb-2">
+                <div class="alert alert-success mb-0" role="alert">
+                  <div class="d-flex">
+                    <div>
+                      <i class="ti ti-leaf alert-icon"></i>
+                    </div>
+                    <div>
+                      <h4 class="alert-title">Buen Consumo</h4>
+                      <div class="text-muted">Su consumo bajó <strong>12.5%</strong> respecto al mes anterior.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Información de cuenta y medidor -->
+            <div class="row mb-3">
+              <div class="col-lg-8">
+                <div class="card">
+                  <div class="card-header">
+                    <h3 class="card-title">
+                      <i class="ti ti-user me-2"></i>
+                      Información de Cuenta
+                    </h3>
+                  </div>
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="mb-3">
+                          <label class="form-label text-muted">Titular</label>
+                          <div class="fw-bold">Juan Pérez García</div>
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label text-muted">Número de Cuenta</label>
+                          <div class="fw-bold">12345678</div>
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label text-muted">Dirección de Servicio</label>
+                          <div class="fw-bold">Av. Principal #123, Urb. Los Jardines</div>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="mb-3">
+                          <label class="form-label text-muted">Número de Medidor</label>
+                          <div class="fw-bold">MED-2024-78456</div>
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label text-muted">Categoría</label>
+                          <div class="fw-bold">Residencial - Doméstico</div>
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label text-muted">Estado del Servicio</label>
+                          <div>
+                            <span class="badge bg-success">
+                              <i class="ti ti-check me-1"></i>Activo
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-4">
+                <div class="card bg-primary text-white">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                      <span class="avatar avatar-lg bg-white-lt me-3">
+                        <i class="ti ti-currency-dollar"></i>
+                      </span>
+                      <div>
+                        <div class="text-white-50 small">Deuda Total</div>
+                        <div class="h1 mb-0">$232.50</div>
+                      </div>
+                    </div>
+                    <div class="d-flex justify-content-between small">
+                      <span>Pendiente: $52.50</span>
+                      <span>Vencido: $180.00</span>
+                    </div>
+                    <hr class="my-3 opacity-25">
+                    <div class="d-flex align-items-center">
+                      <i class="ti ti-calendar-event me-2"></i>
+                      <span class="small">Fecha límite de corte: <strong>25/11/2024</strong></span>
+                    </div>
+                  </div>
+                </div>
+                <!-- Pronóstico del próximo mes -->
+                <div class="card mt-3">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                      <span class="avatar bg-azure-lt me-3">
+                        <i class="ti ti-chart-dots"></i>
+                      </span>
+                      <div>
+                        <div class="text-muted small">Pronóstico Próximo Mes</div>
+                        <div class="h3 mb-0">~38 m³</div>
+                      </div>
+                    </div>
+                    <div class="text-muted small">
+                      <i class="ti ti-info-circle me-1"></i>
+                      Estimado: <strong>$57.00</strong> basado en su historial
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tips de ahorro y estado del servicio -->
+            <div class="row mb-3">
+              <div class="col-lg-8">
+                <div class="card">
+                  <div class="card-header">
+                    <h3 class="card-title">
+                      <i class="ti ti-bulb me-2"></i>
+                      Consejos para Ahorrar Agua
+                    </h3>
+                  </div>
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="d-flex mb-3">
+                          <span class="avatar avatar-sm bg-green-lt me-2">
+                            <i class="ti ti-droplet-off"></i>
+                          </span>
+                          <div class="small">
+                            <strong>Revise fugas</strong>
+                            <div class="text-muted">Una fuga puede desperdiciar hasta 30 litros/día</div>
+                          </div>
+                        </div>
+                        <div class="d-flex mb-3">
+                          <span class="avatar avatar-sm bg-blue-lt me-2">
+                            <i class="ti ti-bath"></i>
+                          </span>
+                          <div class="small">
+                            <strong>Duchas cortas</strong>
+                            <div class="text-muted">Reduzca el tiempo de ducha a 5 minutos</div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="d-flex mb-3">
+                          <span class="avatar avatar-sm bg-cyan-lt me-2">
+                            <i class="ti ti-plant"></i>
+                          </span>
+                          <div class="small">
+                            <strong>Riego eficiente</strong>
+                            <div class="text-muted">Riegue temprano o al atardecer</div>
+                          </div>
+                        </div>
+                        <div class="d-flex mb-3">
+                          <span class="avatar avatar-sm bg-teal-lt me-2">
+                            <i class="ti ti-washing-machine"></i>
+                          </span>
+                          <div class="small">
+                            <strong>Carga completa</strong>
+                            <div class="text-muted">Use lavadora solo con carga completa</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-4">
+                <div class="card">
+                  <div class="card-header">
+                    <h3 class="card-title">
+                      <i class="ti ti-broadcast me-2"></i>
+                      Estado del Servicio
+                    </h3>
+                  </div>
+                  <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                      <div class="list-group-item">
+                        <div class="d-flex align-items-center">
+                          <span class="status-dot status-green me-2"></span>
+                          <div class="flex-fill">
+                            <div class="small fw-bold">Suministro Normal</div>
+                            <div class="text-muted small">Sin interrupciones programadas</div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="list-group-item">
+                        <div class="d-flex align-items-center">
+                          <span class="status-dot status-yellow me-2"></span>
+                          <div class="flex-fill">
+                            <div class="small fw-bold">Mantenimiento</div>
+                            <div class="text-muted small">22/11 - Sector Norte (8am-2pm)</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card-footer">
+                    <a href="#" class="btn btn-outline-primary btn-sm w-100">
+                      <i class="ti ti-phone me-1"></i>
+                      Reportar Emergencia
+                    </a>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <!-- Sección de Estadísticas de Consumo -->
