@@ -1,0 +1,629 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+    <title>Pago de Recibos de Agua - Sistema de Pagos en Línea</title>
+    <!-- CSS files -->
+    <link href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/css/tabler.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" rel="stylesheet"/>
+    <style>
+      .water-bill-card {
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+      .water-bill-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      }
+      .water-bill-card.selected {
+        border-color: #206bc4;
+        background-color: rgba(32, 107, 196, 0.05);
+      }
+      .cart-summary {
+        position: sticky;
+        top: 1rem;
+      }
+      .bill-checkbox {
+        transform: scale(1.3);
+      }
+      .status-badge {
+        font-size: 0.75rem;
+      }
+      .total-amount {
+        font-size: 1.75rem;
+        font-weight: 700;
+      }
+      .empty-cart {
+        text-align: center;
+        padding: 2rem;
+        color: #6c757d;
+      }
+      @media (max-width: 991px) {
+        .cart-summary {
+          position: relative;
+          margin-top: 1rem;
+        }
+      }
+    </style>
+  </head>
+  <body class="theme-light">
+    <div class="page">
+      <!-- Navbar -->
+      <header class="navbar navbar-expand-md navbar-light d-print-none">
+        <div class="container-xl">
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <h1 class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
+            <a href="#">
+              <i class="ti ti-droplet text-primary me-2" style="font-size: 1.5rem;"></i>
+              AguaPago
+            </a>
+          </h1>
+          <div class="navbar-nav flex-row order-md-last">
+            <div class="nav-item dropdown">
+              <a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown">
+                <span class="avatar avatar-sm" style="background-image: url(https://ui-avatars.com/api/?name=Usuario&background=206bc4&color=fff)"></span>
+                <div class="d-none d-xl-block ps-2">
+                  <div>Juan Pérez</div>
+                  <div class="mt-1 small text-muted">Cuenta: 12345678</div>
+                </div>
+              </a>
+              <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                <a href="#" class="dropdown-item">Mi Perfil</a>
+                <a href="#" class="dropdown-item">Historial de Pagos</a>
+                <div class="dropdown-divider"></div>
+                <a href="#" class="dropdown-item">Cerrar Sesión</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Page wrapper -->
+      <div class="page-wrapper">
+        <!-- Page header -->
+        <div class="page-header d-print-none">
+          <div class="container-xl">
+            <div class="page-pretitle">
+              Sistema de Pagos en Línea
+            </div>
+            <h2 class="page-title">
+              <i class="ti ti-file-invoice me-2"></i>
+              Mis Recibos de Agua
+            </h2>
+          </div>
+        </div>
+
+        <!-- Page body -->
+        <div class="page-body">
+          <div class="container-xl">
+            <!-- Alert informativo -->
+            <div class="alert alert-info alert-dismissible" role="alert">
+              <div class="d-flex">
+                <div>
+                  <i class="ti ti-info-circle alert-icon"></i>
+                </div>
+                <div>
+                  <h4 class="alert-title">Bienvenido al sistema de pagos</h4>
+                  <div class="text-muted">Seleccione los recibos que desea pagar marcando la casilla correspondiente. Puede pagar múltiples recibos en una sola transacción.</div>
+                </div>
+              </div>
+              <a class="btn-close" data-bs-dismiss="alert" aria-label="close"></a>
+            </div>
+
+            <div class="row">
+              <!-- Lista de recibos -->
+              <div class="col-lg-8">
+                <div class="card">
+                  <div class="card-header">
+                    <h3 class="card-title">
+                      <i class="ti ti-list-check me-2"></i>
+                      Lecturas Pendientes de Pago
+                    </h3>
+                    <div class="card-actions">
+                      <label class="form-check form-check-single">
+                        <input class="form-check-input" type="checkbox" id="selectAll">
+                        <span class="ms-2">Seleccionar todos</span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="list-group list-group-flush" id="billsList">
+                    <!-- Los recibos se cargarán dinámicamente -->
+                  </div>
+                </div>
+
+                <!-- Historial de pagos recientes -->
+                <div class="card mt-3">
+                  <div class="card-header">
+                    <h3 class="card-title">
+                      <i class="ti ti-history me-2"></i>
+                      Pagos Recientes
+                    </h3>
+                  </div>
+                  <div class="table-responsive">
+                    <table class="table table-vcenter card-table">
+                      <thead>
+                        <tr>
+                          <th>Período</th>
+                          <th>Fecha de Pago</th>
+                          <th>Monto</th>
+                          <th>Estado</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>Julio 2024</td>
+                          <td class="text-muted">15/08/2024</td>
+                          <td>$45.50</td>
+                          <td><span class="badge bg-success">Pagado</span></td>
+                        </tr>
+                        <tr>
+                          <td>Junio 2024</td>
+                          <td class="text-muted">14/07/2024</td>
+                          <td>$42.30</td>
+                          <td><span class="badge bg-success">Pagado</span></td>
+                        </tr>
+                        <tr>
+                          <td>Mayo 2024</td>
+                          <td class="text-muted">13/06/2024</td>
+                          <td>$48.75</td>
+                          <td><span class="badge bg-success">Pagado</span></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Carrito / Resumen de pago -->
+              <div class="col-lg-4">
+                <div class="card cart-summary">
+                  <div class="card-header">
+                    <h3 class="card-title">
+                      <i class="ti ti-shopping-cart me-2"></i>
+                      Resumen de Pago
+                    </h3>
+                  </div>
+                  <div class="card-body">
+                    <div id="cartItems">
+                      <div class="empty-cart">
+                        <i class="ti ti-shopping-cart-off" style="font-size: 3rem; opacity: 0.5;"></i>
+                        <p class="mt-2 mb-0">No hay recibos seleccionados</p>
+                        <small class="text-muted">Seleccione al menos un recibo para continuar</small>
+                      </div>
+                    </div>
+
+                    <hr class="my-3">
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                      <span>Subtotal:</span>
+                      <span id="subtotal">$0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                      <span>Comisión por servicio:</span>
+                      <span id="fee">$0.00</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between align-items-center">
+                      <strong>Total a Pagar:</strong>
+                      <span class="total-amount text-primary" id="total">$0.00</span>
+                    </div>
+                  </div>
+                  <div class="card-footer">
+                    <button class="btn btn-primary w-100" id="payButton" disabled>
+                      <i class="ti ti-credit-card me-2"></i>
+                      Proceder al Pago
+                    </button>
+                    <button class="btn btn-outline-secondary w-100 mt-2" id="clearCart">
+                      <i class="ti ti-trash me-2"></i>
+                      Limpiar Selección
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Información adicional -->
+                <div class="card mt-3">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                      <span class="avatar bg-green-lt me-3">
+                        <i class="ti ti-shield-check"></i>
+                      </span>
+                      <div>
+                        <strong>Pago Seguro</strong>
+                        <div class="text-muted small">Transacciones encriptadas</div>
+                      </div>
+                    </div>
+                    <div class="d-flex align-items-center mb-3">
+                      <span class="avatar bg-blue-lt me-3">
+                        <i class="ti ti-clock"></i>
+                      </span>
+                      <div>
+                        <strong>Disponible 24/7</strong>
+                        <div class="text-muted small">Pague en cualquier momento</div>
+                      </div>
+                    </div>
+                    <div class="d-flex align-items-center">
+                      <span class="avatar bg-yellow-lt me-3">
+                        <i class="ti ti-receipt"></i>
+                      </span>
+                      <div>
+                        <strong>Comprobante Digital</strong>
+                        <div class="text-muted small">Reciba su recibo por email</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer footer-transparent d-print-none">
+          <div class="container-xl">
+            <div class="row text-center align-items-center flex-row-reverse">
+              <div class="col-lg-auto ms-lg-auto">
+                <ul class="list-inline list-inline-dots mb-0">
+                  <li class="list-inline-item"><a href="#" class="link-secondary">Términos y Condiciones</a></li>
+                  <li class="list-inline-item"><a href="#" class="link-secondary">Ayuda</a></li>
+                  <li class="list-inline-item"><a href="#" class="link-secondary">Contacto</a></li>
+                </ul>
+              </div>
+              <div class="col-12 col-lg-auto mt-3 mt-lg-0">
+                <ul class="list-inline list-inline-dots mb-0">
+                  <li class="list-inline-item">
+                    Copyright &copy; 2024
+                    <a href="#" class="link-secondary">AguaPago</a>.
+                    Todos los derechos reservados.
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </footer>
+      </div>
+    </div>
+
+    <!-- Modal de confirmación de pago -->
+    <div class="modal modal-blur fade" id="paymentModal" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Confirmar Pago</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="text-center mb-4">
+              <i class="ti ti-credit-card text-primary" style="font-size: 3rem;"></i>
+            </div>
+            <p class="text-center">Está a punto de realizar el pago de <strong id="modalItemCount">0</strong> recibo(s) por un total de:</p>
+            <h2 class="text-center text-primary" id="modalTotal">$0.00</h2>
+
+            <div class="mt-4">
+              <label class="form-label">Método de Pago</label>
+              <div class="form-selectgroup form-selectgroup-boxes d-flex flex-column">
+                <label class="form-selectgroup-item flex-fill">
+                  <input type="radio" name="payment-method" value="card" class="form-selectgroup-input" checked>
+                  <div class="form-selectgroup-label d-flex align-items-center p-3">
+                    <div class="me-3">
+                      <span class="form-selectgroup-check"></span>
+                    </div>
+                    <div>
+                      <i class="ti ti-credit-card me-2"></i>
+                      Tarjeta de Crédito/Débito
+                    </div>
+                  </div>
+                </label>
+                <label class="form-selectgroup-item flex-fill">
+                  <input type="radio" name="payment-method" value="transfer" class="form-selectgroup-input">
+                  <div class="form-selectgroup-label d-flex align-items-center p-3">
+                    <div class="me-3">
+                      <span class="form-selectgroup-check"></span>
+                    </div>
+                    <div>
+                      <i class="ti ti-building-bank me-2"></i>
+                      Transferencia Bancaria
+                    </div>
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn me-auto" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-primary" id="confirmPayment">
+              <i class="ti ti-check me-2"></i>
+              Confirmar Pago
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de éxito -->
+    <div class="modal modal-blur fade" id="successModal" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-body text-center py-4">
+            <i class="ti ti-circle-check text-success mb-3" style="font-size: 4rem;"></i>
+            <h3>¡Pago Exitoso!</h3>
+            <p class="text-muted">Su pago ha sido procesado correctamente. Recibirá un comprobante en su correo electrónico.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-success w-100" data-bs-dismiss="modal">Aceptar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Libs JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/js/tabler.min.js"></script>
+
+    <script>
+      // Datos de ejemplo de lecturas de agua
+      const waterBills = [
+        {
+          id: 1,
+          period: 'Noviembre 2024',
+          readingDate: '01/11/2024',
+          dueDate: '20/11/2024',
+          previousReading: 1250,
+          currentReading: 1285,
+          consumption: 35,
+          amount: 52.50,
+          status: 'pending',
+          isOverdue: false
+        },
+        {
+          id: 2,
+          period: 'Octubre 2024',
+          readingDate: '01/10/2024',
+          dueDate: '20/10/2024',
+          previousReading: 1210,
+          currentReading: 1250,
+          consumption: 40,
+          amount: 60.00,
+          status: 'overdue',
+          isOverdue: true
+        },
+        {
+          id: 3,
+          period: 'Septiembre 2024',
+          readingDate: '01/09/2024',
+          dueDate: '20/09/2024',
+          previousReading: 1175,
+          currentReading: 1210,
+          consumption: 35,
+          amount: 52.50,
+          status: 'overdue',
+          isOverdue: true
+        },
+        {
+          id: 4,
+          period: 'Agosto 2024',
+          readingDate: '01/08/2024',
+          dueDate: '20/08/2024',
+          previousReading: 1130,
+          currentReading: 1175,
+          consumption: 45,
+          amount: 67.50,
+          status: 'overdue',
+          isOverdue: true
+        }
+      ];
+
+      // Estado del carrito
+      let cart = [];
+      const serviceFeeRate = 0.025; // 2.5% de comisión
+
+      // Renderizar lista de recibos
+      function renderBills() {
+        const billsList = document.getElementById('billsList');
+        billsList.innerHTML = '';
+
+        waterBills.forEach(bill => {
+          const isSelected = cart.some(item => item.id === bill.id);
+          const billElement = document.createElement('div');
+          billElement.className = `list-group-item water-bill-card ${isSelected ? 'selected' : ''}`;
+          billElement.innerHTML = `
+            <div class="row align-items-center">
+              <div class="col-auto">
+                <label class="form-check form-check-single m-0">
+                  <input class="form-check-input bill-checkbox" type="checkbox"
+                         data-bill-id="${bill.id}" ${isSelected ? 'checked' : ''}>
+                </label>
+              </div>
+              <div class="col-auto">
+                <span class="avatar bg-blue-lt">
+                  <i class="ti ti-droplet"></i>
+                </span>
+              </div>
+              <div class="col">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <strong>${bill.period}</strong>
+                    ${bill.isOverdue ? '<span class="badge bg-danger ms-2 status-badge">Vencido</span>' : '<span class="badge bg-warning ms-2 status-badge">Pendiente</span>'}
+                  </div>
+                  <strong class="text-primary">$${bill.amount.toFixed(2)}</strong>
+                </div>
+                <div class="text-muted small mt-1">
+                  <div class="row">
+                    <div class="col-sm-6">
+                      <i class="ti ti-calendar me-1"></i>Vence: ${bill.dueDate}
+                    </div>
+                    <div class="col-sm-6">
+                      <i class="ti ti-gauge me-1"></i>Consumo: ${bill.consumption} m³
+                    </div>
+                  </div>
+                </div>
+                <div class="text-muted small">
+                  <i class="ti ti-arrow-right me-1"></i>Lectura: ${bill.previousReading} → ${bill.currentReading}
+                </div>
+              </div>
+            </div>
+          `;
+          billsList.appendChild(billElement);
+        });
+
+        // Agregar event listeners a los checkboxes
+        document.querySelectorAll('.bill-checkbox').forEach(checkbox => {
+          checkbox.addEventListener('change', function() {
+            const billId = parseInt(this.dataset.billId);
+            toggleBillInCart(billId);
+          });
+        });
+      }
+
+      // Agregar/quitar recibo del carrito
+      function toggleBillInCart(billId) {
+        const billIndex = cart.findIndex(item => item.id === billId);
+
+        if (billIndex > -1) {
+          cart.splice(billIndex, 1);
+        } else {
+          const bill = waterBills.find(b => b.id === billId);
+          if (bill) {
+            cart.push(bill);
+          }
+        }
+
+        updateCart();
+        renderBills();
+      }
+
+      // Actualizar carrito
+      function updateCart() {
+        const cartItems = document.getElementById('cartItems');
+        const subtotalEl = document.getElementById('subtotal');
+        const feeEl = document.getElementById('fee');
+        const totalEl = document.getElementById('total');
+        const payButton = document.getElementById('payButton');
+        const selectAllCheckbox = document.getElementById('selectAll');
+
+        if (cart.length === 0) {
+          cartItems.innerHTML = `
+            <div class="empty-cart">
+              <i class="ti ti-shopping-cart-off" style="font-size: 3rem; opacity: 0.5;"></i>
+              <p class="mt-2 mb-0">No hay recibos seleccionados</p>
+              <small class="text-muted">Seleccione al menos un recibo para continuar</small>
+            </div>
+          `;
+          subtotalEl.textContent = '$0.00';
+          feeEl.textContent = '$0.00';
+          totalEl.textContent = '$0.00';
+          payButton.disabled = true;
+          selectAllCheckbox.checked = false;
+          selectAllCheckbox.indeterminate = false;
+        } else {
+          let itemsHtml = '<div class="list-group list-group-flush">';
+          cart.forEach(item => {
+            itemsHtml += `
+              <div class="list-group-item px-0 py-2">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <strong class="small">${item.period}</strong>
+                    <div class="text-muted small">${item.consumption} m³</div>
+                  </div>
+                  <div class="text-end">
+                    <strong>$${item.amount.toFixed(2)}</strong>
+                    <button class="btn btn-ghost-danger btn-sm ms-2 remove-item" data-bill-id="${item.id}">
+                      <i class="ti ti-x"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            `;
+          });
+          itemsHtml += '</div>';
+          cartItems.innerHTML = itemsHtml;
+
+          // Calcular totales
+          const subtotal = cart.reduce((sum, item) => sum + item.amount, 0);
+          const fee = subtotal * serviceFeeRate;
+          const total = subtotal + fee;
+
+          subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
+          feeEl.textContent = `$${fee.toFixed(2)}`;
+          totalEl.textContent = `$${total.toFixed(2)}`;
+          payButton.disabled = false;
+
+          // Actualizar checkbox de seleccionar todos
+          if (cart.length === waterBills.length) {
+            selectAllCheckbox.checked = true;
+            selectAllCheckbox.indeterminate = false;
+          } else {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = true;
+          }
+
+          // Event listeners para remover items
+          document.querySelectorAll('.remove-item').forEach(btn => {
+            btn.addEventListener('click', function() {
+              const billId = parseInt(this.dataset.billId);
+              toggleBillInCart(billId);
+            });
+          });
+        }
+      }
+
+      // Event listener para seleccionar todos
+      document.getElementById('selectAll').addEventListener('change', function() {
+        if (this.checked) {
+          cart = [...waterBills];
+        } else {
+          cart = [];
+        }
+        updateCart();
+        renderBills();
+      });
+
+      // Event listener para limpiar carrito
+      document.getElementById('clearCart').addEventListener('click', function() {
+        cart = [];
+        updateCart();
+        renderBills();
+      });
+
+      // Event listener para botón de pago
+      document.getElementById('payButton').addEventListener('click', function() {
+        const subtotal = cart.reduce((sum, item) => sum + item.amount, 0);
+        const fee = subtotal * serviceFeeRate;
+        const total = subtotal + fee;
+
+        document.getElementById('modalItemCount').textContent = cart.length;
+        document.getElementById('modalTotal').textContent = `$${total.toFixed(2)}`;
+
+        const paymentModal = new bootstrap.Modal(document.getElementById('paymentModal'));
+        paymentModal.show();
+      });
+
+      // Event listener para confirmar pago
+      document.getElementById('confirmPayment').addEventListener('click', function() {
+        // Cerrar modal de pago
+        const paymentModal = bootstrap.Modal.getInstance(document.getElementById('paymentModal'));
+        paymentModal.hide();
+
+        // Simular procesamiento de pago
+        setTimeout(() => {
+          // Mostrar modal de éxito
+          const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+          successModal.show();
+
+          // Limpiar carrito después del pago exitoso
+          cart = [];
+          updateCart();
+          renderBills();
+        }, 500);
+      });
+
+      // Inicializar
+      document.addEventListener('DOMContentLoaded', function() {
+        renderBills();
+        updateCart();
+      });
+    </script>
+  </body>
+</html>
