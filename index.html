@@ -254,22 +254,6 @@
                         </div>
                       </div>
                     </div>
-
-                    <div class="row mt-3">
-                      <!-- Gráfico de comparación año actual vs anterior -->
-                      <div class="col-12">
-                        <div class="card">
-                          <div class="card-header">
-                            <h3 class="card-title">Comparativa: 2024 vs 2023</h3>
-                          </div>
-                          <div class="card-body">
-                            <div class="chart-container">
-                              <canvas id="comparisonChart"></canvas>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -1089,14 +1073,11 @@
         amounts6m: [42.30, 45.50, 67.50, 52.50, 60.00, 52.50],
         labels12m: ['Dic', 'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov'],
         data12m: [38, 42, 39, 36, 34, 38, 32, 35, 45, 35, 40, 35],
-        amounts12m: [50.00, 55.00, 51.00, 47.00, 44.00, 50.00, 42.30, 45.50, 67.50, 52.50, 60.00, 52.50],
-        // Datos del año anterior para comparación
-        data2023: [40, 38, 42, 39, 37, 41, 35, 38, 48, 38, 43, 40],
-        data2024: [38, 42, 39, 36, 34, 38, 32, 35, 45, 35, 40, 35]
+        amounts12m: [50.00, 55.00, 51.00, 47.00, 44.00, 50.00, 42.30, 45.50, 67.50, 52.50, 60.00, 52.50]
       };
 
       // Variables para los gráficos
-      let consumptionChart, distributionChart, comparisonChart;
+      let consumptionChart, distributionChart;
 
       // Inicializar gráficos
       function initCharts() {
@@ -1208,60 +1189,6 @@
                   label: function(context) {
                     return context.label + ': $' + context.parsed.toFixed(2);
                   }
-                }
-              }
-            }
-          }
-        });
-
-        // Gráfico de comparación anual (líneas)
-        const ctxComparison = document.getElementById('comparisonChart').getContext('2d');
-        comparisonChart = new Chart(ctxComparison, {
-          type: 'line',
-          data: {
-            labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
-            datasets: [{
-              label: '2024',
-              data: consumptionHistory.data2024,
-              borderColor: 'rgba(32, 107, 196, 1)',
-              backgroundColor: 'rgba(32, 107, 196, 0.1)',
-              fill: true,
-              tension: 0.4
-            }, {
-              label: '2023',
-              data: consumptionHistory.data2023,
-              borderColor: 'rgba(108, 117, 125, 1)',
-              backgroundColor: 'rgba(108, 117, 125, 0.1)',
-              fill: true,
-              tension: 0.4,
-              borderDash: [5, 5]
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: {
-              intersect: false,
-              mode: 'index'
-            },
-            plugins: {
-              legend: {
-                position: 'top'
-              },
-              tooltip: {
-                callbacks: {
-                  label: function(context) {
-                    return context.dataset.label + ': ' + context.parsed.y + ' m³';
-                  }
-                }
-              }
-            },
-            scales: {
-              y: {
-                beginAtZero: true,
-                title: {
-                  display: true,
-                  text: 'Consumo (m³)'
                 }
               }
             }
