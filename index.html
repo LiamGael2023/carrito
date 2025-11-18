@@ -10,6 +10,8 @@
     <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" rel="stylesheet"/>
     <!-- jsPDF for PDF generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Chart.js for consumption charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
       .water-bill-card {
         transition: all 0.3s ease;
@@ -63,6 +65,39 @@
       .btn-view-receipt {
         padding: 0.25rem 0.5rem;
         font-size: 0.75rem;
+      }
+      .chart-container {
+        position: relative;
+        height: 250px;
+      }
+      .stat-card {
+        text-align: center;
+        padding: 1rem;
+      }
+      .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #206bc4;
+      }
+      .stat-label {
+        font-size: 0.75rem;
+        color: #6c757d;
+        text-transform: uppercase;
+      }
+      .consumption-indicator {
+        display: inline-flex;
+        align-items: center;
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+      }
+      .consumption-up {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+      }
+      .consumption-down {
+        background-color: rgba(25, 135, 84, 0.1);
+        color: #198754;
       }
     </style>
   </head>
@@ -130,6 +165,114 @@
                 </div>
               </div>
               <a class="btn-close" data-bs-dismiss="alert" aria-label="close"></a>
+            </div>
+
+            <!-- Sección de Estadísticas de Consumo -->
+            <div class="row mb-3">
+              <div class="col-12">
+                <div class="card">
+                  <div class="card-header">
+                    <h3 class="card-title">
+                      <i class="ti ti-chart-bar me-2"></i>
+                      Estadísticas de Consumo
+                    </h3>
+                    <div class="card-actions">
+                      <div class="btn-group" role="group">
+                        <input type="radio" class="btn-check" name="chart-period" id="period-6m" checked>
+                        <label class="btn btn-sm" for="period-6m">6 meses</label>
+                        <input type="radio" class="btn-check" name="chart-period" id="period-12m">
+                        <label class="btn btn-sm" for="period-12m">12 meses</label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <div class="row">
+                      <!-- Tarjetas de estadísticas -->
+                      <div class="col-sm-6 col-lg-3">
+                        <div class="card card-sm">
+                          <div class="card-body stat-card">
+                            <div class="stat-value" id="avgConsumption">36.5</div>
+                            <div class="stat-label">Consumo Promedio (m³)</div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-sm-6 col-lg-3">
+                        <div class="card card-sm">
+                          <div class="card-body stat-card">
+                            <div class="stat-value" id="totalConsumption">219</div>
+                            <div class="stat-label">Total Consumido (m³)</div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-sm-6 col-lg-3">
+                        <div class="card card-sm">
+                          <div class="card-body stat-card">
+                            <div class="stat-value" id="maxConsumption">45</div>
+                            <div class="stat-label">Máximo Mensual (m³)</div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-sm-6 col-lg-3">
+                        <div class="card card-sm">
+                          <div class="card-body stat-card">
+                            <div class="stat-value" id="currentTrend">
+                              <span class="consumption-indicator consumption-down">
+                                <i class="ti ti-trending-down me-1"></i>-12.5%
+                              </span>
+                            </div>
+                            <div class="stat-label">Tendencia vs Mes Anterior</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="row mt-3">
+                      <!-- Gráfico de consumo mensual -->
+                      <div class="col-lg-8">
+                        <div class="card">
+                          <div class="card-header">
+                            <h3 class="card-title">Consumo Mensual (m³)</h3>
+                          </div>
+                          <div class="card-body">
+                            <div class="chart-container">
+                              <canvas id="consumptionChart"></canvas>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <!-- Gráfico de comparación de costos -->
+                      <div class="col-lg-4">
+                        <div class="card">
+                          <div class="card-header">
+                            <h3 class="card-title">Distribución por Período</h3>
+                          </div>
+                          <div class="card-body">
+                            <div class="chart-container">
+                              <canvas id="distributionChart"></canvas>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="row mt-3">
+                      <!-- Gráfico de comparación año actual vs anterior -->
+                      <div class="col-12">
+                        <div class="card">
+                          <div class="card-header">
+                            <h3 class="card-title">Comparativa: 2024 vs 2023</h3>
+                          </div>
+                          <div class="card-body">
+                            <div class="chart-container">
+                              <canvas id="comparisonChart"></canvas>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div class="row">
@@ -939,10 +1082,231 @@
         document.getElementById('pdfViewer').src = '';
       });
 
+      // Datos históricos de consumo para los gráficos
+      const consumptionHistory = {
+        labels6m: ['Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov'],
+        data6m: [32, 35, 45, 35, 40, 35],
+        amounts6m: [42.30, 45.50, 67.50, 52.50, 60.00, 52.50],
+        labels12m: ['Dic', 'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov'],
+        data12m: [38, 42, 39, 36, 34, 38, 32, 35, 45, 35, 40, 35],
+        amounts12m: [50.00, 55.00, 51.00, 47.00, 44.00, 50.00, 42.30, 45.50, 67.50, 52.50, 60.00, 52.50],
+        // Datos del año anterior para comparación
+        data2023: [40, 38, 42, 39, 37, 41, 35, 38, 48, 38, 43, 40],
+        data2024: [38, 42, 39, 36, 34, 38, 32, 35, 45, 35, 40, 35]
+      };
+
+      // Variables para los gráficos
+      let consumptionChart, distributionChart, comparisonChart;
+
+      // Inicializar gráficos
+      function initCharts() {
+        // Gráfico de consumo mensual (barras)
+        const ctxConsumption = document.getElementById('consumptionChart').getContext('2d');
+        consumptionChart = new Chart(ctxConsumption, {
+          type: 'bar',
+          data: {
+            labels: consumptionHistory.labels6m,
+            datasets: [{
+              label: 'Consumo (m³)',
+              data: consumptionHistory.data6m,
+              backgroundColor: 'rgba(32, 107, 196, 0.7)',
+              borderColor: 'rgba(32, 107, 196, 1)',
+              borderWidth: 1,
+              borderRadius: 4
+            }, {
+              label: 'Importe ($)',
+              data: consumptionHistory.amounts6m,
+              backgroundColor: 'rgba(39, 174, 96, 0.7)',
+              borderColor: 'rgba(39, 174, 96, 1)',
+              borderWidth: 1,
+              borderRadius: 4,
+              yAxisID: 'y1'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+              intersect: false,
+              mode: 'index'
+            },
+            plugins: {
+              legend: {
+                position: 'top',
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    let label = context.dataset.label || '';
+                    if (label) {
+                      label += ': ';
+                    }
+                    if (context.datasetIndex === 0) {
+                      label += context.parsed.y + ' m³';
+                    } else {
+                      label += '$' + context.parsed.y.toFixed(2);
+                    }
+                    return label;
+                  }
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                position: 'left',
+                title: {
+                  display: true,
+                  text: 'Consumo (m³)'
+                }
+              },
+              y1: {
+                beginAtZero: true,
+                position: 'right',
+                grid: {
+                  drawOnChartArea: false
+                },
+                title: {
+                  display: true,
+                  text: 'Importe ($)'
+                }
+              }
+            }
+          }
+        });
+
+        // Gráfico de distribución (doughnut)
+        const ctxDistribution = document.getElementById('distributionChart').getContext('2d');
+        distributionChart = new Chart(ctxDistribution, {
+          type: 'doughnut',
+          data: {
+            labels: ['Pendiente', 'Vencido', 'Pagado'],
+            datasets: [{
+              data: [52.50, 180.00, 136.55],
+              backgroundColor: [
+                'rgba(255, 193, 7, 0.8)',
+                'rgba(220, 53, 69, 0.8)',
+                'rgba(25, 135, 84, 0.8)'
+              ],
+              borderColor: [
+                'rgba(255, 193, 7, 1)',
+                'rgba(220, 53, 69, 1)',
+                'rgba(25, 135, 84, 1)'
+              ],
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom'
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return context.label + ': $' + context.parsed.toFixed(2);
+                  }
+                }
+              }
+            }
+          }
+        });
+
+        // Gráfico de comparación anual (líneas)
+        const ctxComparison = document.getElementById('comparisonChart').getContext('2d');
+        comparisonChart = new Chart(ctxComparison, {
+          type: 'line',
+          data: {
+            labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+            datasets: [{
+              label: '2024',
+              data: consumptionHistory.data2024,
+              borderColor: 'rgba(32, 107, 196, 1)',
+              backgroundColor: 'rgba(32, 107, 196, 0.1)',
+              fill: true,
+              tension: 0.4
+            }, {
+              label: '2023',
+              data: consumptionHistory.data2023,
+              borderColor: 'rgba(108, 117, 125, 1)',
+              backgroundColor: 'rgba(108, 117, 125, 0.1)',
+              fill: true,
+              tension: 0.4,
+              borderDash: [5, 5]
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+              intersect: false,
+              mode: 'index'
+            },
+            plugins: {
+              legend: {
+                position: 'top'
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return context.dataset.label + ': ' + context.parsed.y + ' m³';
+                  }
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: {
+                  display: true,
+                  text: 'Consumo (m³)'
+                }
+              }
+            }
+          }
+        });
+      }
+
+      // Actualizar gráficos según período seleccionado
+      function updateChartPeriod(months) {
+        if (months === 6) {
+          consumptionChart.data.labels = consumptionHistory.labels6m;
+          consumptionChart.data.datasets[0].data = consumptionHistory.data6m;
+          consumptionChart.data.datasets[1].data = consumptionHistory.amounts6m;
+        } else {
+          consumptionChart.data.labels = consumptionHistory.labels12m;
+          consumptionChart.data.datasets[0].data = consumptionHistory.data12m;
+          consumptionChart.data.datasets[1].data = consumptionHistory.amounts12m;
+        }
+        consumptionChart.update();
+
+        // Actualizar estadísticas
+        const data = months === 6 ? consumptionHistory.data6m : consumptionHistory.data12m;
+        const avg = (data.reduce((a, b) => a + b, 0) / data.length).toFixed(1);
+        const total = data.reduce((a, b) => a + b, 0);
+        const max = Math.max(...data);
+
+        document.getElementById('avgConsumption').textContent = avg;
+        document.getElementById('totalConsumption').textContent = total;
+        document.getElementById('maxConsumption').textContent = max;
+      }
+
+      // Event listeners para cambio de período
+      document.getElementById('period-6m').addEventListener('change', function() {
+        if (this.checked) updateChartPeriod(6);
+      });
+
+      document.getElementById('period-12m').addEventListener('change', function() {
+        if (this.checked) updateChartPeriod(12);
+      });
+
       // Inicializar
       document.addEventListener('DOMContentLoaded', function() {
         renderBills();
         updateCart();
+        initCharts();
       });
     </script>
   </body>
