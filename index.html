@@ -13,91 +13,415 @@
     <!-- Chart.js for consumption charts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
-      .water-bill-card {
-        transition: all 0.3s ease;
-        cursor: pointer;
+      :root {
+        --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --gradient-success: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        --gradient-danger: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        --gradient-warning: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --gradient-info: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+        --shadow-md: 0 4px 16px rgba(0,0,0,0.1);
+        --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
       }
-      .water-bill-card:hover {
+
+      /* Glassmorphism effect */
+      .glass-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        box-shadow: var(--shadow-md);
+      }
+
+      /* Animaciones suaves */
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes pulse {
+        0%, 100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+      }
+
+      .page-body {
+        animation: fadeInUp 0.5s ease-out;
+      }
+
+      /* Card moderna con sombra suave */
+      .card {
+        border-radius: 16px;
+        border: none;
+        box-shadow: var(--shadow-sm);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .card:hover {
+        box-shadow: var(--shadow-md);
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
       }
+
+      .card-header {
+        background: transparent;
+        border-bottom: 1px solid rgba(0,0,0,0.06);
+        padding: 1.25rem 1.5rem;
+      }
+
+      /* Tabs modernos */
+      .nav-tabs {
+        border: none;
+        gap: 0.5rem;
+      }
+
+      .nav-tabs .nav-link {
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem 1.5rem;
+        color: #6c757d;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        background: transparent;
+      }
+
+      .nav-tabs .nav-link:hover {
+        color: #206bc4;
+        background: rgba(32, 107, 196, 0.08);
+      }
+
+      .nav-tabs .nav-link.active {
+        color: #fff;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      }
+
+      /* Alertas con gradiente */
+      .alert {
+        border: none;
+        border-radius: 16px;
+        padding: 1.25rem;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .alert-danger {
+        background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        color: white;
+      }
+
+      .alert-warning {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+      }
+
+      .alert-success {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        color: white;
+      }
+
+      .alert .text-muted {
+        color: rgba(255,255,255,0.9) !important;
+      }
+
+      /* Bills card con hover effect */
+      .water-bill-card {
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        border-radius: 12px;
+        border: 2px solid transparent;
+        background: white;
+      }
+
+      .water-bill-card:hover {
+        transform: translateY(-4px) scale(1.01);
+        box-shadow: var(--shadow-lg);
+        border-color: rgba(102, 126, 234, 0.3);
+      }
+
       .water-bill-card.selected {
-        border-color: #206bc4;
-        background-color: rgba(32, 107, 196, 0.05);
+        border-color: #667eea;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
       }
+
+      /* Cart summary con glassmorphism */
       .cart-summary {
         position: sticky;
         top: 1rem;
+        border-radius: 20px;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(102, 126, 234, 0.2);
       }
+
       .bill-checkbox {
-        transform: scale(1.3);
+        transform: scale(1.4);
+        cursor: pointer;
       }
+
       .status-badge {
         font-size: 0.75rem;
       }
+
       .total-amount {
-        font-size: 1.75rem;
-        font-weight: 700;
+        font-size: 2rem;
+        font-weight: 800;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
       }
+
       .empty-cart {
         text-align: center;
-        padding: 2rem;
+        padding: 2.5rem;
         color: #6c757d;
       }
+
       @media (max-width: 991px) {
         .cart-summary {
           position: relative;
           margin-top: 1rem;
         }
       }
+
       .pdf-viewer-container {
         width: 100%;
         height: 70vh;
-        border: 1px solid #dee2e6;
-        border-radius: 4px;
+        border: none;
+        border-radius: 12px;
         overflow: hidden;
+        box-shadow: var(--shadow-md);
       }
+
       .pdf-viewer-container iframe {
         width: 100%;
         height: 100%;
         border: none;
       }
-      .btn-view-receipt {
-        padding: 0.25rem 0.5rem;
-        font-size: 0.75rem;
+
+      /* Botones mejorados */
+      .btn {
+        border-radius: 12px;
+        font-weight: 500;
+        padding: 0.625rem 1.25rem;
+        transition: all 0.3s ease;
       }
+
+      .btn-primary {
+        background: var(--gradient-primary);
+        border: none;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+      }
+
+      .btn-view-receipt {
+        padding: 0.35rem 0.75rem;
+        font-size: 0.75rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+      }
+
+      .btn-view-receipt:hover {
+        transform: scale(1.05);
+      }
+
+      /* Charts container */
       .chart-container {
         position: relative;
-        height: 250px;
-      }
-      .stat-card {
-        text-align: center;
+        height: 280px;
         padding: 1rem;
       }
-      .stat-value {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #206bc4;
+
+      /* Stat cards con gradiente */
+      .stat-card {
+        text-align: center;
+        padding: 1.5rem;
+        border-radius: 16px;
+        transition: all 0.3s ease;
       }
+
+      .stat-card:hover {
+        transform: translateY(-4px);
+      }
+
+      .card-sm:nth-child(1) .stat-card {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+      }
+
+      .card-sm:nth-child(2) .stat-card {
+        background: linear-gradient(135deg, rgba(17, 153, 142, 0.1) 0%, rgba(56, 239, 125, 0.1) 100%);
+      }
+
+      .card-sm:nth-child(3) .stat-card {
+        background: linear-gradient(135deg, rgba(240, 147, 251, 0.1) 0%, rgba(245, 87, 108, 0.1) 100%);
+      }
+
+      .card-sm:nth-child(4) .stat-card {
+        background: linear-gradient(135deg, rgba(79, 172, 254, 0.1) 0%, rgba(0, 242, 254, 0.1) 100%);
+      }
+
+      .stat-value {
+        font-size: 2rem;
+        font-weight: 800;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+      }
+
       .stat-label {
         font-size: 0.75rem;
         color: #6c757d;
         text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
       }
+
+      /* Consumption indicator mejorado */
       .consumption-indicator {
         display: inline-flex;
         align-items: center;
-        font-size: 0.8rem;
-        padding: 0.25rem 0.5rem;
-        border-radius: 4px;
+        font-size: 0.85rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 20px;
+        font-weight: 600;
+        box-shadow: var(--shadow-sm);
       }
+
       .consumption-up {
-        background-color: rgba(220, 53, 69, 0.1);
+        background: linear-gradient(135deg, rgba(235, 51, 73, 0.15) 0%, rgba(244, 92, 67, 0.15) 100%);
         color: #dc3545;
       }
+
       .consumption-down {
-        background-color: rgba(25, 135, 84, 0.1);
+        background: linear-gradient(135deg, rgba(17, 153, 142, 0.15) 0%, rgba(56, 239, 125, 0.15) 100%);
         color: #198754;
+      }
+
+      /* Debt card con gradiente */
+      .card.bg-primary {
+        background: var(--gradient-primary) !important;
+        border: none;
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+      }
+
+      /* Avatar mejorados */
+      .avatar {
+        box-shadow: var(--shadow-sm);
+        transition: all 0.3s ease;
+      }
+
+      .avatar:hover {
+        transform: scale(1.1);
+      }
+
+      /* Badge con animación */
+      .badge {
+        border-radius: 20px;
+        padding: 0.35rem 0.75rem;
+        font-weight: 600;
+        animation: pulse 2s infinite;
+      }
+
+      /* Modal mejorado */
+      .modal-content {
+        border-radius: 20px;
+        border: none;
+        box-shadow: var(--shadow-lg);
+      }
+
+      .modal-header {
+        border-bottom: 1px solid rgba(0,0,0,0.06);
+        border-radius: 20px 20px 0 0;
+      }
+
+      /* Icons con color */
+      .ti {
+        transition: all 0.3s ease;
+      }
+
+      .card-title .ti {
+        color: #667eea;
+      }
+
+      /* Scroll suave */
+      * {
+        scrollbar-width: thin;
+        scrollbar-color: #667eea #f1f3f5;
+      }
+
+      *::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      *::-webkit-scrollbar-track {
+        background: #f1f3f5;
+        border-radius: 10px;
+      }
+
+      *::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 10px;
+      }
+
+      *::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+      }
+
+      /* List group mejorado */
+      .list-group-item {
+        border: none;
+        border-bottom: 1px solid rgba(0,0,0,0.04);
+        transition: all 0.3s ease;
+      }
+
+      .list-group-item:hover {
+        background: rgba(102, 126, 234, 0.03);
+        padding-left: 1.5rem;
+      }
+
+      /* Input checkbox mejorado */
+      .form-check-input:checked {
+        background: var(--gradient-primary);
+        border-color: #667eea;
+      }
+
+      /* Table mejorada */
+      .table {
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .table thead th {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        border: none;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+      }
+
+      .table tbody tr {
+        transition: all 0.3s ease;
+      }
+
+      .table tbody tr:hover {
+        background: rgba(102, 126, 234, 0.05);
+        transform: scale(1.01);
       }
     </style>
   </head>
